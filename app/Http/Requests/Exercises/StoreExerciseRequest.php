@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests\Exercises;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreExerciseRequest extends FormRequest
 {
@@ -15,7 +15,12 @@ class StoreExerciseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('exercises')->where(fn ($query) => $query->where('user_id', $this->user()->id)),
+            ],
             'category' => ['nullable', 'string', 'max:255'],
             'equipment' => ['nullable', 'string', 'max:255'],
             'primary_muscles' => ['nullable', 'array'],

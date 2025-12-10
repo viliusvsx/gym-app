@@ -11,9 +11,21 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
+import { index as exercisesIndex } from '@/routes/exercises';
+import { index as metricsIndex } from '@/routes/metrics';
+import { index as programsIndex } from '@/routes/programs';
+import { index as workoutsIndex } from '@/routes/workouts';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-react';
+import {
+    Activity,
+    BookOpen,
+    CalendarClock,
+    Dumbbell,
+    Folder,
+    LayoutGrid,
+    ListChecks,
+} from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -21,6 +33,26 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Workouts',
+        href: workoutsIndex(),
+        icon: Dumbbell,
+    },
+    {
+        title: 'Programs',
+        href: programsIndex(),
+        icon: CalendarClock,
+    },
+    {
+        title: 'Exercises',
+        href: exercisesIndex(),
+        icon: ListChecks,
+    },
+    {
+        title: 'Metrics',
+        href: metricsIndex(),
+        icon: Activity,
     },
 ];
 
