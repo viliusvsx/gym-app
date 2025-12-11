@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as exercisesIndex } from '@/routes/exercises';
+import { index as habitsIndex } from '@/routes/habits';
 import { index as metricsIndex } from '@/routes/metrics';
 import { index as programsIndex } from '@/routes/programs';
 import { scheduleIndex } from '@/lib/schedule-routes';
@@ -22,6 +23,7 @@ import {
     Activity,
     BookOpen,
     CalendarClock,
+    CheckCircle2,
     Dumbbell,
     Folder,
     LayoutGrid,
@@ -49,6 +51,11 @@ const mainNavItems: NavItem[] = [
         title: 'Schedule',
         href: scheduleIndex(),
         icon: CalendarClock,
+    },
+    {
+        title: 'Habits',
+        href: habitsIndex(),
+        icon: CheckCircle2,
     },
     {
         title: 'Exercises',

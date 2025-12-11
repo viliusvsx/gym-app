@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\HabitLogStatus;
 use App\Models\ClassReservation;
 use App\Models\ClassTimeSlot;
+use App\Models\Habit;
 use App\Models\WorkoutSession;
 use App\Models\WorkoutSet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -106,7 +110,7 @@ class DashboardController extends Controller
                     'confirmed' => $confirmed,
                     'utilization' => $totalCapacity > 0 ? round(($confirmed / max($totalCapacity, 1)) * 100, 1) : 0,
                 ];
-            ]);
+            });
 
         $sessionHighlights = $recentSessions->map(function (WorkoutSession $session) {
             $volume = $session->sets->sum(function ($set) {
@@ -126,11 +130,30 @@ class DashboardController extends Controller
             ];
         });
 
+        $habitStreaks = $user->habits()
+            ->with(['logs' => fn ($query) => $query->orderByDesc('logged_for')->limit(30)])
+            ->orderBy('name')
+            ->get()
+            ->map(function (Habit $habit) {
+                [$currentStreak, $longestStreak] = $this->streaksForLogs($habit->logs);
+
+                return [
+                    'id' => $habit->id,
+                    'name' => $habit->name,
+                    'status' => $habit->status?->value,
+                    'current_streak' => $currentStreak,
+                    'longest_streak' => $longestStreak,
+                ];
+            })
+            ->sortByDesc('current_streak')
+            ->values();
+
         return Inertia::render('dashboard', [
             'bestLifts' => $bestLifts,
             'volumeByDay' => $volumeByDay,
             'bodyWeights' => $bodyWeights,
             'sessionHighlights' => $sessionHighlights,
+            'habitStreaks' => $habitStreaks,
             'upcomingReservations' => $upcomingReservations,
             'coachUtilization' => $coachUtilization,
             'unitSystem' => 'metric',
@@ -144,5 +167,51 @@ class DashboardController extends Controller
         }
 
         return $weight * (1 + ($reps / 30));
+    }
+
+    private function streaksForLogs(Collection $logs): array
+    {
+        $currentStreak = 0;
+        $longestStreak = 0;
+        $expectedDate = now()->toDateString();
+
+        foreach ($logs as $log) {
+            $loggedFor = $log->logged_for?->toDateString();
+
+            $status = is_string($log->status) ? $log->status : $log->status?->value;
+
+            if ($status === HabitLogStatus::Completed->value && $loggedFor === $expectedDate) {
+                $currentStreak++;
+                $expectedDate = Carbon::parse($expectedDate)->subDay()->toDateString();
+            } elseif ($loggedFor < $expectedDate) {
+                break;
+            }
+        }
+
+        $previousDate = null;
+        $sequence = 0;
+
+        foreach ($logs as $log) {
+            $status = is_string($log->status) ? $log->status : $log->status?->value;
+
+            if ($status !== HabitLogStatus::Completed->value) {
+                $sequence = 0;
+                $previousDate = null;
+                continue;
+            }
+
+            $loggedFor = $log->logged_for?->toDateString();
+
+            if ($previousDate && $loggedFor === Carbon::parse($previousDate)->subDay()->toDateString()) {
+                $sequence++;
+            } else {
+                $sequence = 1;
+            }
+
+            $previousDate = $loggedFor;
+            $longestStreak = max($longestStreak, $sequence);
+        }
+
+        return [$currentStreak, $longestStreak];
     }
 }

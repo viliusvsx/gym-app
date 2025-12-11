@@ -11,7 +11,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { Activity, Dumbbell, Flame, TrendingUp } from 'lucide-react';
+import { Activity, CheckCircle2, Dumbbell, Flame, TrendingUp } from 'lucide-react';
 
 type BestLift = {
     exercise: string;
@@ -34,9 +34,9 @@ type SessionHighlight = {
 
 type ReservationHighlight = {
     id: number;
-    title: string | undefined;
+    title?: string;
     status: string;
-    starts_at: string | undefined;
+    starts_at?: string;
 };
 
 type CoachUtilization = {
@@ -47,6 +47,14 @@ type CoachUtilization = {
     utilization: number;
 };
 
+type HabitStreak = {
+    id: number;
+    name: string;
+    status?: string | null;
+    current_streak: number;
+    longest_streak: number;
+};
+
 interface DashboardProps {
     bestLifts: BestLift[];
     volumeByDay: VolumePoint[];
@@ -54,6 +62,7 @@ interface DashboardProps {
     sessionHighlights: SessionHighlight[];
     upcomingReservations: ReservationHighlight[];
     coachUtilization: CoachUtilization[];
+    habitStreaks: HabitStreak[];
     unitSystem: string;
     errors?: Record<string, string>;
 }
@@ -86,6 +95,7 @@ export default function Dashboard({
     sessionHighlights = [],
     upcomingReservations = [],
     coachUtilization = [],
+    habitStreaks = [],
     errors = {},
 }: DashboardProps) {
     const toNumber = (value: number | string | null | undefined) => {
@@ -118,6 +128,10 @@ export default function Dashboard({
     const topLiftE1Rm = topLift ? toNumber(topLift.estimated_one_rm) : null;
 
     const maxVolume = Math.max(...volumeByDay.map((point) => point.volume), 0);
+    const maxStreak =
+        habitStreaks.length > 0
+            ? Math.max(...habitStreaks.map((habit) => habit.longest_streak))
+            : 1;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -263,7 +277,7 @@ export default function Dashboard({
                     </Card>
                 </div>
 
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="grid gap-4 xl:grid-cols-3">
                     <Card>
                         <CardHeader>
                             <CardTitle>Best lifts</CardTitle>
@@ -334,6 +348,63 @@ export default function Dashboard({
                             )}
                         </CardContent>
                     </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Habit streaks</CardTitle>
+                            <CardDescription>Consistency across your routines</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {habitStreaks.length === 0 ? (
+                                <div className="text-sm text-muted-foreground">
+                                    Add habits to see streak progress on your dashboard.
+                                </div>
+                            ) : (
+                                habitStreaks.slice(0, 4).map((habit) => (
+                                    <div
+                                        key={habit.id}
+                                        className="flex flex-col gap-1 rounded-lg border px-3 py-2"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="rounded-full bg-primary/10 p-1 text-primary">
+                                                    <CheckCircle2 className="h-4 w-4" />
+                                                </span>
+                                                <div>
+                                                    <div className="text-sm font-semibold">
+                                                        {habit.name}
+                                                    </div>
+                                                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                                                        {habit.status ?? 'active'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm font-semibold text-primary">
+                                                {habit.current_streak}d
+                                            </div>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-muted">
+                                            <div
+                                                className="h-2 rounded-full bg-gradient-to-r from-primary/80 to-primary"
+                                                style={{
+                                                    width: `${Math.min(
+                                                        100,
+                                                        (habit.longest_streak /
+                                                            Math.max(maxStreak, 1)) *
+                                                            100,
+                                                    )}%`,
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                            <span>Longest {habit.longest_streak}d</span>
+                                            <span>Current {habit.current_streak}d</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -354,14 +425,20 @@ export default function Dashboard({
                                         className="flex items-center justify-between rounded-lg border px-3 py-2"
                                     >
                                         <div>
-                                            <div className="font-semibold">{reservation.title ?? 'Class'}</div>
+                                            <div className="font-semibold">
+                                                {reservation.title ?? 'Class'}
+                                            </div>
                                             <div className="text-xs text-muted-foreground">
-                                                {reservation.starts_at ? formatDateTime(reservation.starts_at) : '—'}
+                                                {reservation.starts_at
+                                                    ? formatDateTime(reservation.starts_at)
+                                                    : '—'}
                                             </div>
                                         </div>
                                         <Badge
                                             variant={
-                                                reservation.status === 'waitlisted' ? 'secondary' : 'default'
+                                                reservation.status === 'waitlisted'
+                                                    ? 'secondary'
+                                                    : 'default'
                                             }
                                         >
                                             {reservation.status}
@@ -391,7 +468,8 @@ export default function Dashboard({
                                         <div>
                                             <div className="font-semibold">{utilization.title}</div>
                                             <div className="text-xs text-muted-foreground">
-                                                {utilization.upcoming} upcoming · {utilization.confirmed} booked
+                                                {utilization.upcoming} upcoming ·{' '}
+                                                {utilization.confirmed} booked
                                             </div>
                                         </div>
                                         <div className="text-sm font-semibold">
