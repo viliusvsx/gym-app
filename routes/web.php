@@ -45,7 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('habits/{habit}/logs', [HabitLogController::class, 'store'])->name('habits.logs.store');
     Route::get('messages', [ConversationController::class, 'index'])->name('messages.index');
     Route::get('messages/{conversation}', [ConversationController::class, 'show'])->name('messages.show');
-    Route::post('messages/{conversation}/messages', [ConversationController::class, 'storeMessage'])->name('messages.messages.store');
+    Route::post('messages/{conversation}/messages', [ConversationController::class, 'storeMessage'])->name('messages.store');
 });
 
 require __DIR__.'/settings.php';

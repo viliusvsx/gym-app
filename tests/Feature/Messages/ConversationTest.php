@@ -50,7 +50,7 @@ it('allows participants to post and read messages', function () {
         ->create(['body' => 'Welcome to the thread']);
 
     $this->actingAs($alice)
-        ->post(route('messages.messages.store', $conversation), [
+        ->post(route('messages.store', $conversation), [
             'body' => 'Thanks, excited to join!',
         ])
         ->assertRedirect();
