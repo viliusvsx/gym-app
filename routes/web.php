@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Exercises\ExerciseController;
+use App\Http\Controllers\Habits\HabitController;
+use App\Http\Controllers\Habits\HabitLogController;
 use App\Http\Controllers\Metrics\BodyMetricController;
 use App\Http\Controllers\Programs\ProgramController;
 use App\Http\Controllers\Workouts\WorkoutSessionController;
@@ -29,6 +31,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('metrics', [BodyMetricController::class, 'index'])->name('metrics.index');
     Route::post('metrics', [BodyMetricController::class, 'store'])->name('metrics.store');
+
+    Route::get('habits', [HabitController::class, 'index'])->name('habits.index');
+    Route::post('habits', [HabitController::class, 'store'])->name('habits.store');
+    Route::post('habits/{habit}/logs', [HabitLogController::class, 'store'])->name('habits.logs.store');
 });
 
 require __DIR__.'/settings.php';
