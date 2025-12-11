@@ -66,6 +66,16 @@ class User extends Authenticatable
         return $this->hasMany(WorkoutSession::class);
     }
 
+    public function gymClasses(): HasMany
+    {
+        return $this->hasMany(GymClass::class, 'coach_id');
+    }
+
+    public function classReservations(): HasMany
+    {
+        return $this->hasMany(ClassReservation::class);
+    }
+
     public function bodyMetrics(): HasMany
     {
         return $this->hasMany(BodyMetric::class);

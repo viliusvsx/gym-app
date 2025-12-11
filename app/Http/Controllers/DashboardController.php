@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ClassReservation;
+use App\Models\ClassTimeSlot;
 use App\Models\WorkoutSession;
 use App\Models\WorkoutSet;
 use Illuminate\Http\Request;
@@ -74,6 +76,38 @@ class DashboardController extends Controller
                 'weight_kg' => $metric->weight_kg,
             ]);
 
+        $upcomingReservations = ClassReservation::query()
+            ->with(['timeSlot.gymClass'])
+            ->where('user_id', $user->id)
+            ->whereIn('status', [ClassReservation::STATUS_CONFIRMED, ClassReservation::STATUS_WAITLISTED])
+            ->whereHas('timeSlot', fn ($query) => $query->where('starts_at', '>=', now()))
+            ->orderBy(ClassTimeSlot::select('starts_at')->whereColumn('class_time_slots.id', 'class_reservations.class_time_slot_id'))
+            ->limit(5)
+            ->get()
+            ->map(fn (ClassReservation $reservation) => [
+                'id' => $reservation->id,
+                'title' => $reservation->timeSlot?->gymClass?->title,
+                'status' => $reservation->status,
+                'starts_at' => $reservation->timeSlot?->starts_at?->toIso8601String(),
+            ]);
+
+        $coachUtilization = $user->gymClasses()
+            ->with(['timeSlots.reservations'])
+            ->get()
+            ->map(function ($gymClass) {
+                $upcomingSlots = $gymClass->timeSlots->filter(fn ($slot) => $slot->starts_at?->isFuture());
+                $totalCapacity = $upcomingSlots->sum(fn ($slot) => $slot->capacity ?? $gymClass->default_capacity);
+                $confirmed = $upcomingSlots->flatMap->reservations->where('status', ClassReservation::STATUS_CONFIRMED)->count();
+
+                return [
+                    'id' => $gymClass->id,
+                    'title' => $gymClass->title,
+                    'upcoming' => $upcomingSlots->count(),
+                    'confirmed' => $confirmed,
+                    'utilization' => $totalCapacity > 0 ? round(($confirmed / max($totalCapacity, 1)) * 100, 1) : 0,
+                ];
+            ]);
+
         $sessionHighlights = $recentSessions->map(function (WorkoutSession $session) {
             $volume = $session->sets->sum(function ($set) {
                 if (! $set->weight_kg || ! $set->reps) {
@@ -97,6 +131,8 @@ class DashboardController extends Controller
             'volumeByDay' => $volumeByDay,
             'bodyWeights' => $bodyWeights,
             'sessionHighlights' => $sessionHighlights,
+            'upcomingReservations' => $upcomingReservations,
+            'coachUtilization' => $coachUtilization,
             'unitSystem' => 'metric',
         ]);
     }

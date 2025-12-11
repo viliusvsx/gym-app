@@ -1,4 +1,5 @@
 import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import {
     Card,
     CardContent,
@@ -31,11 +32,28 @@ type SessionHighlight = {
     sets: number;
 };
 
+type ReservationHighlight = {
+    id: number;
+    title: string | undefined;
+    status: string;
+    starts_at: string | undefined;
+};
+
+type CoachUtilization = {
+    id: number;
+    title: string;
+    upcoming: number;
+    confirmed: number;
+    utilization: number;
+};
+
 interface DashboardProps {
     bestLifts: BestLift[];
     volumeByDay: VolumePoint[];
     bodyWeights: BodyWeightPoint[];
     sessionHighlights: SessionHighlight[];
+    upcomingReservations: ReservationHighlight[];
+    coachUtilization: CoachUtilization[];
     unitSystem: string;
     errors?: Record<string, string>;
 }
@@ -66,6 +84,8 @@ export default function Dashboard({
     volumeByDay = [],
     bodyWeights = [],
     sessionHighlights = [],
+    upcomingReservations = [],
+    coachUtilization = [],
     errors = {},
 }: DashboardProps) {
     const toNumber = (value: number | string | null | undefined) => {
@@ -308,6 +328,74 @@ export default function Dashboard({
                                             <span>{session.sets} sets</span>
                                             <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
                                             <span>{session.volume.toFixed(1)} kg</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Upcoming reservations</CardTitle>
+                            <CardDescription>Capacity and waitlist visibility</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {upcomingReservations.length === 0 ? (
+                                <div className="text-sm text-muted-foreground">
+                                    Book a class to see it here.
+                                </div>
+                            ) : (
+                                upcomingReservations.map((reservation) => (
+                                    <div
+                                        key={reservation.id}
+                                        className="flex items-center justify-between rounded-lg border px-3 py-2"
+                                    >
+                                        <div>
+                                            <div className="font-semibold">{reservation.title ?? 'Class'}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {reservation.starts_at ? formatDateTime(reservation.starts_at) : '—'}
+                                            </div>
+                                        </div>
+                                        <Badge
+                                            variant={
+                                                reservation.status === 'waitlisted' ? 'secondary' : 'default'
+                                            }
+                                        >
+                                            {reservation.status}
+                                        </Badge>
+                                    </div>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Coach overview</CardTitle>
+                            <CardDescription>Utilization across your classes</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            {coachUtilization.length === 0 ? (
+                                <div className="text-sm text-muted-foreground">
+                                    Create a class to see attendance.
+                                </div>
+                            ) : (
+                                coachUtilization.map((utilization) => (
+                                    <div
+                                        key={utilization.id}
+                                        className="flex items-center justify-between rounded-lg border px-3 py-2"
+                                    >
+                                        <div>
+                                            <div className="font-semibold">{utilization.title}</div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {utilization.upcoming} upcoming · {utilization.confirmed} booked
+                                            </div>
+                                        </div>
+                                        <div className="text-sm font-semibold">
+                                            {utilization.utilization}%
                                         </div>
                                     </div>
                                 ))
