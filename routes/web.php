@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Exercises\ExerciseController;
 use App\Http\Controllers\Habits\HabitController;
 use App\Http\Controllers\Habits\HabitLogController;
+use App\Http\Controllers\Messages\ConversationController;
 use App\Http\Controllers\Metrics\BodyMetricController;
 use App\Http\Controllers\Programs\ProgramController;
 use App\Http\Controllers\Schedule\ClassController;
@@ -42,6 +43,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('habits', [HabitController::class, 'index'])->name('habits.index');
     Route::post('habits', [HabitController::class, 'store'])->name('habits.store');
     Route::post('habits/{habit}/logs', [HabitLogController::class, 'store'])->name('habits.logs.store');
+    Route::get('messages', [ConversationController::class, 'index'])->name('messages.index');
+    Route::get('messages/{conversation}', [ConversationController::class, 'show'])->name('messages.show');
+    Route::post('messages/{conversation}/messages', [ConversationController::class, 'storeMessage'])->name('messages.messages.store');
 });
 
 require __DIR__.'/settings.php';
