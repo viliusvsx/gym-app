@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Exercises\ExerciseController;
+use App\Http\Controllers\Messages\ConversationController;
 use App\Http\Controllers\Metrics\BodyMetricController;
 use App\Http\Controllers\Programs\ProgramController;
 use App\Http\Controllers\Workouts\WorkoutSessionController;
@@ -29,6 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('metrics', [BodyMetricController::class, 'index'])->name('metrics.index');
     Route::post('metrics', [BodyMetricController::class, 'store'])->name('metrics.store');
+
+    Route::get('messages', [ConversationController::class, 'index'])->name('messages.index');
+    Route::get('messages/{conversation}', [ConversationController::class, 'show'])->name('messages.show');
+    Route::post('messages/{conversation}/messages', [ConversationController::class, 'storeMessage'])->name('messages.messages.store');
 });
 
 require __DIR__.'/settings.php';

@@ -60,4 +60,9 @@ class WorkoutSession extends Model
     {
         return $this->hasMany(Superset::class)->orderBy('sequence');
     }
+
+    public function conversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class);
+    }
 }

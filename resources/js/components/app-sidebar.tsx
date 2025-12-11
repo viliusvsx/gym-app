@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { index as exercisesIndex } from '@/routes/exercises';
+import { index as messagesIndex } from '@/routes/messages';
 import { index as metricsIndex } from '@/routes/metrics';
 import { index as programsIndex } from '@/routes/programs';
 import { index as workoutsIndex } from '@/routes/workouts';
@@ -25,6 +26,7 @@ import {
     Folder,
     LayoutGrid,
     ListChecks,
+    MessageSquare,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -38,6 +40,11 @@ const mainNavItems: NavItem[] = [
         title: 'Workouts',
         href: workoutsIndex(),
         icon: Dumbbell,
+    },
+    {
+        title: 'Messages',
+        href: messagesIndex(),
+        icon: MessageSquare,
     },
     {
         title: 'Programs',
