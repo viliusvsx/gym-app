@@ -14,6 +14,7 @@ import { dashboard } from '@/routes';
 import { index as exercisesIndex } from '@/routes/exercises';
 import { index as metricsIndex } from '@/routes/metrics';
 import { index as programsIndex } from '@/routes/programs';
+import { scheduleIndex } from '@/lib/schedule-routes';
 import { index as workoutsIndex } from '@/routes/workouts';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -42,6 +43,11 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Programs',
         href: programsIndex(),
+        icon: CalendarClock,
+    },
+    {
+        title: 'Schedule',
+        href: scheduleIndex(),
         icon: CalendarClock,
     },
     {

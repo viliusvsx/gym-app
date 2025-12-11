@@ -4,6 +4,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Exercises\ExerciseController;
 use App\Http\Controllers\Metrics\BodyMetricController;
 use App\Http\Controllers\Programs\ProgramController;
+use App\Http\Controllers\Schedule\ClassController;
+use App\Http\Controllers\Schedule\ReservationController;
+use App\Http\Controllers\Schedule\ScheduleController;
 use App\Http\Controllers\Workouts\WorkoutSessionController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,6 +32,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('metrics', [BodyMetricController::class, 'index'])->name('metrics.index');
     Route::post('metrics', [BodyMetricController::class, 'store'])->name('metrics.store');
+
+    Route::get('schedule', [ScheduleController::class, 'index'])->name('schedule.index');
+    Route::post('classes', [ClassController::class, 'store'])->name('classes.store');
+    Route::post('reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    Route::delete('reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
 });
 
 require __DIR__.'/settings.php';
